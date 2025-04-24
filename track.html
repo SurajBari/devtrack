@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Progress Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* Slice Paper Blast Animation */
+    @keyframes slice-paper-blast {
+      0% {
+        transform: scale(0.9);
+        opacity: 0;
+        clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+        clip-path: polygon(50% 0, 50% 0, 100% 100%, 100% 100%);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+        clip-path: polygon(0% 0, 0% 100%, 100% 100%, 100% 0%);
+      }
+    }
+
+    .slice-blast {
+      animation: slice-paper-blast 0.6s ease-out;
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      top: 5%;
+      right: 5%;
+      background-color: white;
+      border-left: 4px solid green;
+      color: green;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-gray-800 font-sans bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
+
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white py-5 shadow-md">
+    <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold tracking-wide">📈 Dev Progress Tracker</h1>
+      <button id="addBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-100 transition">+ Add Milestone</button>
+    </div>
+  </header>
+
+  <!-- Skill Progress Bars -->
+  <section class="max-w-5xl mx-auto px-4 mt-10">
+    <h2 class="text-2xl font-semibold mb-6">🛠️ Skill Progress</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div><span>Tailwind CSS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-cyan-500 h-4 rounded-full" style="width: 85%"></div></div></div>
+      <div><span>JavaScript</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-yellow-400 h-4 rounded-full" style="width: 75%"></div></div></div>
+      <div><span>AWS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-orange-500 h-4 rounded-full" style="width: 50%"></div></div></div>
+      <div><span>Python</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-green-500 h-4 rounded-full" style="width: 65%"></div></div></div>
+      <div><span>React</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-blue-500 h-4 rounded-full" style="width: 70%"></div></div></div>
+    </div>
+  </section>
+
+  <!-- Milestone Timeline -->
+  <section class="max-w-5xl mx-auto px-4 mt-16">
+    <h2 class="text-2xl font-semibold mb-6">🚀 Milestones</h2>
+    <div id="timeline" class="space-y-6 relative border-l-4 border-indigo-500 pl-6">
+      <!-- JS will render milestones here -->
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md animate-fade-in relative">
+      <h3 class="text-xl font-bold mb-4">📌 Add a Milestone</h3>
+      <input type="text" id="milestoneInput" placeholder="e.g. Built my first React component" class="w-full border border-gray-300 p-3 rounded-md mb-4 focus:ring focus:ring-indigo-200" />
+      <button id="saveBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Save</button>
+      <button id="closeBtn" class="ml-3 text-gray-600 hover:text-gray-800">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <i class="fas fa-check-circle text-green-600"></i>
+    <span id="toastMsg">Saved!</span>
+  </div>
+
+  <!-- Script -->
+  <script>
+    AOS.init();
+
+    const addBtn = document.getElementById("addBtn");
+    const modal = document.getElementById("modal");
+    const closeBtn = document.getElementById("closeBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const milestoneInput = document.getElementById("milestoneInput");
+    const timeline = document.getElementById("timeline");
+    const toast = document.getElementById("toast");
+    const toastMsg = document.getElementById("toastMsg");
+
+    const categories = ["Learning", "Project", "Achievement"];
+    const colors = {
+      "Learning": "bg-yellow-100 text-yellow-800",
+      "Project": "bg-blue-100 text-blue-800",
+      "Achievement": "bg-green-100 text-green-800"
+    };
+
+    let milestones = JSON.parse(localStorage.getItem("milestones")) || [];
+    let editIndex = null;
+
+    addBtn.onclick = () => {
+      milestoneInput.value = "";
+      editIndex = null;
+      modal.classList.remove("hidden");
+    };
+    closeBtn.onclick = () => modal.classList.add("hidden");
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") modal.classList.add("hidden");
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.add("hidden");
+    });
+
+    // Show Toast notification
+    function showToast(message) {
+      toastMsg.innerText = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1500);
+    }
+
+    // Render timeline with slice-paper-blast
+    function renderTimeline() {
+      timeline.innerHTML = "";
+      milestones.slice().reverse().forEach((item, index) => {
+        const category = categories[Math.floor(Math.random() * categories.length)];
+        const badge = `<span class="inline-block text-xs px-2 py-1 rounded-full font-medium ${colors[category]}">${category}</span>`;
+        const icon = `<div class="absolute -left-6 top-3 bg-indigo-500 text-white w-6 h-6 flex items-center justify-center rounded-full shadow"><i class="fas fa-check"></i></div>`;
+
+        const div = document.createElement("div");
+        div.setAttribute("data-aos", "fade-up");
+        div.setAttribute("data-aos-delay", index * 100);
+        div.classList.add("slice-blast");
+
+        div.innerHTML = `
+          <div class="relative bg-white hover:shadow-lg shadow-md border-l-4 border-indigo-400 p-4 rounded-md transition group">
+            ${icon}
+            <div class="flex justify-between items-start gap-3">
+              <p class="text-lg font-medium">${item.text}</p>
+              ${badge}
+            </div>
+            <span class="text-sm text-gray-500 mt-1 block">${item.date}</span>
+            <div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+              <button onclick="editMilestone(${milestones.length - 1 - index})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-pen"></i></button>
+              <button onclick="deleteMilestone(${milestones.length - 1 - index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+        timeline.appendChild(div);
+      });
+    }
+
+    // Delete milestone with paper blast animation
+    function deleteMilestone(index) {
+      const deletedMilestone = milestones[index];
+      milestones.splice(index, 1);
+      localStorage.setItem("milestones", JSON.stringify(milestones));
+      
+      // Trigger the slice-blast animation on delete
+      renderTimeline();
+
+      showToast("Milestone deleted!");
+    }
+
+    // Edit milestone
+    function editMilestone(index) {
+      editIndex = index;
+      milestoneInput.value = milestones[index].text;
+      modal.classList.remove("hidden");
+    }
+
+    // Save milestone (add or edit)
+    saveBtn.onclick = () => {
+      const text = milestoneInput.value.trim();
+      if (text) {
+        if (editIndex !== null) {
+          milestones[editIndex].text = text;
+          milestones[editIndex].date = new Date().toLocaleString();
+          showToast("Milestone updated!");
+          editIndex = null;
+        } else {
+          const newEntry = { text, date: new Date().toLocaleString() };
+          milestones.push(newEntry);
+          showToast("Milestone saved!");
+        }
+        localStorage.setItem("milestones", JSON.stringify(milestones));
+        milestoneInput.value = "";
+        modal.classList.add("hidden");
+        renderTimeline();
+      }
+    };
+
+    renderTimeline();  // Load the timeline on page load
+  </script>
+</body>
+</html>    
