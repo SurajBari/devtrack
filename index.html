@@ -9,7 +9,6 @@
   <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    /* Slice Paper Blast Animation */
     @keyframes slice-paper-blast {
       0% {
         transform: scale(0.9);
@@ -45,7 +44,6 @@
       }
     }
 
-    /* Toast Notifications */
     .toast {
       position: fixed;
       top: 5%;
@@ -150,7 +148,6 @@
       if (e.target === modal) modal.classList.add("hidden");
     });
 
-    // Show Toast notification
     function showToast(message) {
       toastMsg.innerText = message;
       toast.classList.add("show");
@@ -159,7 +156,6 @@
       }, 1500);
     }
 
-    // Render timeline with slice-paper-blast
     function renderTimeline() {
       timeline.innerHTML = "";
       milestones.slice().reverse().forEach((item, index) => {
@@ -190,26 +186,20 @@
       });
     }
 
-    // Delete milestone with paper blast animation
     function deleteMilestone(index) {
       const deletedMilestone = milestones[index];
       milestones.splice(index, 1);
       localStorage.setItem("milestones", JSON.stringify(milestones));
-      
-      // Trigger the slice-blast animation on delete
       renderTimeline();
-
       showToast("Milestone deleted!");
     }
 
-    // Edit milestone
     function editMilestone(index) {
       editIndex = index;
       milestoneInput.value = milestones[index].text;
       modal.classList.remove("hidden");
     }
 
-    // Save milestone (add or edit)
     saveBtn.onclick = () => {
       const text = milestoneInput.value.trim();
       if (text) {
@@ -230,7 +220,14 @@
       }
     };
 
-    renderTimeline();  // Load the timeline on page load
+    renderTimeline();
   </script>
+
+  <!-- Footer -->
+  <footer class="mt-20 bg-indigo-600 text-white py-5">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <p class="text-sm sm:text-base">&copy; 2025 <span class="font-semibold">SURAJ BARI</span>. All rights reserved.</p>
+    </div>
+  </footer>
 </body>
-</html>    
+</html>
