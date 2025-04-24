@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dev Progress Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
   <style>
+    html, body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+    }
+
     @keyframes slice-paper-blast {
       0% {
         transform: scale(0.9);
@@ -31,17 +42,13 @@
       animation: slice-paper-blast 0.6s ease-out;
     }
 
-    .fade-in {
-      animation: fadeIn 1s ease-out;
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
 
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
+    .fade-in {
+      animation: fadeIn 1s ease-out;
     }
 
     .toast {
@@ -65,53 +72,59 @@
     }
   </style>
 </head>
-<body class="min-h-screen text-gray-800 font-sans bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
+<body class="text-gray-800 font-sans bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
 
-  <!-- Header -->
-  <header class="bg-indigo-600 text-white py-5 shadow-md">
-    <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
-      <h1 class="text-3xl font-bold tracking-wide">📈 Dev Progress Tracker</h1>
-      <button id="addBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-100 transition">+ Add Milestone</button>
+  <main>
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white py-5 shadow-md">
+      <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
+        <h1 class="text-3xl font-bold tracking-wide">📈 Dev Progress Tracker</h1>
+        <button id="addBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-100 transition">+ Add Milestone</button>
+      </div>
+    </header>
+
+    <!-- Skill Progress Bars -->
+    <section class="max-w-5xl mx-auto px-4 mt-10">
+      <h2 class="text-2xl font-semibold mb-6">🛠️ Skill Progress</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div><span>Tailwind CSS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-cyan-500 h-4 rounded-full" style="width: 85%"></div></div></div>
+        <div><span>JavaScript</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-yellow-400 h-4 rounded-full" style="width: 75%"></div></div></div>
+        <div><span>AWS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-orange-500 h-4 rounded-full" style="width: 50%"></div></div></div>
+        <div><span>Python</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-green-500 h-4 rounded-full" style="width: 65%"></div></div></div>
+        <div><span>React</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-blue-500 h-4 rounded-full" style="width: 70%"></div></div></div>
+      </div>
+    </section>
+
+    <!-- Milestone Timeline -->
+    <section class="max-w-5xl mx-auto px-4 mt-16">
+      <h2 class="text-2xl font-semibold mb-6">🚀 Milestones</h2>
+      <div id="timeline" class="space-y-6 relative border-l-4 border-indigo-500 pl-6">
+        <!-- JS will render milestones here -->
+      </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md animate-fade-in relative">
+        <h3 class="text-xl font-bold mb-4">📌 Add a Milestone</h3>
+        <input type="text" id="milestoneInput" placeholder="e.g. Built my first React component" class="w-full border border-gray-300 p-3 rounded-md mb-4 focus:ring focus:ring-indigo-200" />
+        <button id="saveBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Save</button>
+        <button id="closeBtn" class="ml-3 text-gray-600 hover:text-gray-800">Cancel</button>
+      </div>
     </div>
-  </header>
 
-  <!-- Skill Progress Bars -->
-  <section class="max-w-5xl mx-auto px-4 mt-10">
-    <h2 class="text-2xl font-semibold mb-6">🛠️ Skill Progress</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div><span>Tailwind CSS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-cyan-500 h-4 rounded-full" style="width: 85%"></div></div></div>
-      <div><span>JavaScript</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-yellow-400 h-4 rounded-full" style="width: 75%"></div></div></div>
-      <div><span>AWS</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-orange-500 h-4 rounded-full" style="width: 50%"></div></div></div>
-      <div><span>Python</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-green-500 h-4 rounded-full" style="width: 65%"></div></div></div>
-      <div><span>React</span><div class="w-full h-4 bg-gray-200 rounded-full"><div class="bg-blue-500 h-4 rounded-full" style="width: 70%"></div></div></div>
+    <!-- Toast -->
+    <div id="toast" class="toast">
+      <i class="fas fa-check-circle text-green-600 mr-2"></i>
+      <span id="toastMsg">Saved!</span>
     </div>
-  </section>
+  </main>
 
-  <!-- Milestone Timeline -->
-  <section class="max-w-5xl mx-auto px-4 mt-16">
-    <h2 class="text-2xl font-semibold mb-6">🚀 Milestones</h2>
-    <div id="timeline" class="space-y-6 relative border-l-4 border-indigo-500 pl-6">
-      <!-- JS will render milestones here -->
-    </div>
-  </section>
+  <!-- Footer -->
+  <footer class="bg-indigo-600 text-white py-3 text-center text-sm shadow-inner">
+    © 2025 Suraj Bari
+  </footer>
 
-  <!-- Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md animate-fade-in relative">
-      <h3 class="text-xl font-bold mb-4">📌 Add a Milestone</h3>
-      <input type="text" id="milestoneInput" placeholder="e.g. Built my first React component" class="w-full border border-gray-300 p-3 rounded-md mb-4 focus:ring focus:ring-indigo-200" />
-      <button id="saveBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Save</button>
-      <button id="closeBtn" class="ml-3 text-gray-600 hover:text-gray-800">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast" class="toast">
-    <i class="fas fa-check-circle text-green-600"></i>
-    <span id="toastMsg">Saved!</span>
-  </div>
-
-  <!-- Script -->
   <script>
     AOS.init();
 
@@ -139,11 +152,13 @@
       editIndex = null;
       modal.classList.remove("hidden");
     };
+
     closeBtn.onclick = () => modal.classList.add("hidden");
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") modal.classList.add("hidden");
     });
+
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.classList.add("hidden");
     });
@@ -187,7 +202,6 @@
     }
 
     function deleteMilestone(index) {
-      const deletedMilestone = milestones[index];
       milestones.splice(index, 1);
       localStorage.setItem("milestones", JSON.stringify(milestones));
       renderTimeline();
@@ -222,12 +236,5 @@
 
     renderTimeline();
   </script>
-
-  <!-- Footer -->
-  <footer class="mt-20 bg-indigo-600 text-white py-5">
-    <div class="max-w-5xl mx-auto px-4 text-center">
-      <p class="text-sm sm:text-base">&copy; 2025 <span class="font-semibold">SURAJ BARI</span>. All rights reserved.</p>
-    </div>
-  </footer>
 </body>
 </html>
